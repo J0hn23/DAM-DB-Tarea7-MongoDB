@@ -1,0 +1,83 @@
+mongod 
+mongosh
+
+1
+use zoo
+2
+db.createCollection('animals')
+3
+show collections
+4
+db.animals.insertMany([animals.json])
+5
+db.animals.findOne({habitat:'Rainforest','caretakers.nameCaretaker':'Emily Brown'})
+6
+db.animals.find({},{_id:0, name:1,species:1,habitat:1}).sort({species:1})
+7
+db.animals.find({species:'Tiger'},{_id:0,name:1,age:1}).sort({age:1})
+8
+db.animals.insertOne({
+   name: 'Rajah',
+   age: 8,
+   gender: 'Male',
+   species: 'Tiger',
+   habitat: 'Rainforest',
+   birthplace: 'Bandipur Tiger Reserve, India',
+   parents: [
+           { name: 'Shere Khan', gender: 'Male' },
+           { name: 'Tala', gender: 'Female' }
+           ],
+   caretakers: [ 
+	   { idCaretaker: 102,
+           nameCaretaker: 'Emily Brown' 
+           }
+           ]
+  })
+
+9
+db.animals.update({name:'Leo'},{$set:{age:8}})
+10
+db.animals.updateMany({},{$rename:{'habitat':'environment'}})
+11
+db.animals.updateMany({},{$rename:{'habitat':'environment'}})
+12
+db.animals.aggregate([{$group:{_id:'$species',count:{$sum:1}}}])
+
+13
+db.animals.aggregate([
+	{$unwind:'$caretakers'},
+	{$group:{_id: '$caretakers.nameCaretaker', animals:{$addToSet:'name'}}},
+	{$project:{_id:0,nameCaretaker: '$_id',animals:1}},
+	{$out:'Caretakers'}
+])
+14
+db.animals.find().sort({age:-1}).limit(3)
+15
+db.animals.find().skip(5).limit(7)
+16
+db.animals.aggregate([
+    {$unwind: '$caretakers'},
+    {$group: {
+            _id: '$environment',
+            totalAnimals: { $sum: 1 },
+            species: { $addToSet: "$species" },
+            caretakers: { $addToSet: "$caretakers.nameCaretaker" }
+        }
+    },
+    {$project: {
+            _id: 0,
+            environment: "$_id",
+            totalAnimals: 1,
+            species: 1,
+            caretakers: 1
+        }
+    },
+    {$out: 'Habitats'}
+])
+
+
+
+
+
+
+
